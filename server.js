@@ -44,6 +44,8 @@ let rooms = {},
 io.sockets.on("connection", function(socket){
     sockets.push(socket)
     let currentUser = socket
+    let currentRoom = null //
+
     print("New connection from " + currentUser.handshake.address)
 
     let roomCode = ""
@@ -51,6 +53,15 @@ io.sockets.on("connection", function(socket){
     for(let i = 0; i < 6; i++){
         roomCode += abcxyz[Math.floor(Math.random() * abcxyz.length)]
     }
+
+    socket.on("join", (req) => {
+        console.log(req)
+        // TODO: Check if room exists
+        currentRoom = req.room
+
+        // TODO: On leave a room and empty, delete it from the array
+        // TODO: When room travel's done, delete it from the array
+    })
 
     // Socket
 })
