@@ -52,16 +52,29 @@ io.sockets.on("connection", function(socket){
     print("New connection from " + currentUser.handshake.address)
 
     let roomCode = ""
-    const abcxyz = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    for(let i = 0; i < 6; i++){
-        roomCode += abcxyz[Math.floor(Math.random() * abcxyz.length)]
+    let _genCode = () => {
+        const abcxyz = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        for(let i = 0; i < 6; i++){
+            roomCode += abcxyz[Math.floor(Math.random() * abcxyz.length)]
+        }
+    }
+    _genCode()
+
+    while(rooms[roomCode] !== undefined){ // Si la room existe à la génération, on refait un nouveau code
+        console.log("Generating a new code")
+        _genCode()
     }
 
     socket.on("join", (uuid) => {
         socket_uuid = uuid
+        roomId = roomCode
+        rooms[roomId] = new Room(roomCode, "", [new User(uuid, "nil", "nil", Math.floor(Date.now() / 3), Math.floor(Date.now() / 3), "walking", true, new Coordinates(0, 0))])
 
-        socket.emit("naive_attach", new Room(roomCode, "", [new User(uuid, "nil", "nil", Math.floor(Date.now() / 3), Math.floor(Date.now() / 3), "walking", true, new Coordinates(0, 0))]))
-        // TODO: Check if room exists
+        socket.emit("naive_attach", rooms[roomId])
+        // TODO: Check if room exists after generated ? generate new code || continue
+        
+        // TODO: Check if room exists before attaching when join_click and if users_in < 2
+
         // roomId = req.room // pass roomId instead of full room
 
         // TODO: On leave a room and empty, delete it from the array
@@ -73,5 +86,35 @@ io.sockets.on("connection", function(socket){
         // io.in(currentRoom).emit("started")
     })
 
+    socket.on("room_attach", (requestRID) => {
+        requestedRoomId = requestRID.toUpperCase()
+        console.log(requestedRoomId)
+        console.log(rooms[requestedRoomId])
+        if (rooms[requestedRoomId] !== undefined) {
+            if (rooms[requestedRoomId].users.length < 2) {
+
+                rooms[requestedRoomId].users.push(new User(socket_uuid, "nil", "nil", Math.floor(Date.now() / 3), Math.floor(Date.now() / 3), "walking", true, new Coordinates(0, 0)))
+
+                socket.emit("room_attach", {
+                    success: true,
+                    message: "room_found",
+                    room: rooms[requestedRoomId]
+                })
+            } else {
+                socket.emit("room_attach", {
+                    success: false,
+                    message: "room_full"
+                })
+            }
+        }else{
+            // Room is undefined
+            socket.emit("room_attach", {
+                success: false,
+                message: "no_room_found"
+            })
+        }
+    })
+
     // Socket
 })
+console.log("Server up and running on port " + process.env.PORT)
