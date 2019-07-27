@@ -44,7 +44,7 @@ let rooms = {},
     }
 */
 
-io.sockets.on("connection", function(socket){
+io.sockets.on("connection", function(socket){ // TODO: restaurer roomCode si uuid isOwner
     sockets.push(socket)
     let currentUser = socket
     let roomId = null, socket_uuid = null //
@@ -88,8 +88,10 @@ io.sockets.on("connection", function(socket){
 
     socket.on("room_attach", (requestRID) => {
         requestedRoomId = requestRID.toUpperCase()
+
         console.log(requestedRoomId)
         console.log(rooms[requestedRoomId])
+        
         if (rooms[requestedRoomId] !== undefined) {
             if (rooms[requestedRoomId].users.length < 2) {
 
@@ -110,7 +112,7 @@ io.sockets.on("connection", function(socket){
             // Room is undefined
             socket.emit("room_attach", {
                 success: false,
-                message: "no_room_found"
+                message: "room_not_found"
             })
         }
     })
