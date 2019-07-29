@@ -71,13 +71,8 @@ io.sockets.on("connection", function(socket){ // TODO: restaurer roomCode si uui
         rooms[roomId] = new Room(roomCode, "", [new User(uuid, "nil", "nil", Math.floor(Date.now() / 3), Math.floor(Date.now() / 3), "walking", true, new Coordinates(0, 0))])
 
         socket.emit("naive_attach", rooms[roomId])
-        // TODO: Check if room exists after generated ? generate new code || continue
-        
-        // TODO: Check if room exists before attaching when join_click and if users_in < 2
+        // TODO: Si une room contenant l'utilisateur en tant que owner existe, on la récupère et la renvoie à l'utilisateur
 
-        // roomId = req.room // pass roomId instead of full room
-
-        // TODO: On leave a room and empty, delete it from the array
         // TODO: When room travel's done, delete it from the array
 
         // socket.broadcast.to(currentRoom).emit('newplayer', rooms[data.room].players[rooms[data.room].players.length - 1])
@@ -89,14 +84,18 @@ io.sockets.on("connection", function(socket){ // TODO: restaurer roomCode si uui
     socket.on("room_attach", (requestRID) => {
         requestedRoomId = requestRID.toUpperCase()
 
-        console.log(requestedRoomId)
-        console.log(rooms[requestedRoomId])
+        console.log("request: " + requestedRoomId)
         
         if (rooms[requestedRoomId] !== undefined) {
-            if (rooms[requestedRoomId].users.length < 2) {
+            if (rooms[requestedRoomId].users.length < 2 || rooms[requestedRoomId].users.filter(e => e.id === socket_uuid).length > 0) {
+    
+                if(rooms[requestedRoomId].users.filter(e => e.id === socket_uuid).length === 0) { // If user was not in the room, we had a new one to the room
+                    rooms[requestedRoomId].users.push(new User(socket_uuid, "nil", "nil", Math.floor(Date.now() / 3), Math.floor(Date.now() / 3), "walking", true, new Coordinates(0, 0)))
 
-                rooms[requestedRoomId].users.push(new User(socket_uuid, "nil", "nil", Math.floor(Date.now() / 3), Math.floor(Date.now() / 3), "walking", true, new Coordinates(0, 0)))
+                    // TODO: emit to room
+                }
 
+                // TODO: attach socket to room
                 socket.emit("room_attach", {
                     success: true,
                     message: "room_found",
