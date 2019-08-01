@@ -28,16 +28,7 @@ let rooms = {},
                 joinedAt:
                 isOwner:
             },
-            uuid: {
-                latitude:
-                longitude:
-                profile: // driving, walking, cycling
-                name:
-                color:
-                lastUpdated:
-                joinedAt:
-                isOwner:
-            }
+            uuid: {...}
         ],
         polyline: 
         directions: // not sure, A->B != B->A (+ depending of the mean of transport)
@@ -87,7 +78,6 @@ io.sockets.on("connection", function(socket){ // TODO: restaurer roomCode si uui
             _genCode()
 
             while (rooms[roomCode] !== undefined) { // Si la room existe à la génération, on refait un nouveau code
-                console.log("Generating a new code")
                 _genCode()
             }
         }
@@ -140,6 +130,10 @@ io.sockets.on("connection", function(socket){ // TODO: restaurer roomCode si uui
                 message: "room_not_found"
             })
         }
+    })
+
+    socket.on("update_location", (coords) => {
+        console.log(coords)
     })
 
     // Socket
