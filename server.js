@@ -133,7 +133,12 @@ io.sockets.on("connection", function(socket){ // TODO: restaurer roomCode si uui
     })
 
     socket.on("update_location", (coords) => {
-        console.log(coords)
+        rooms[socket_roomId].users.filter((e) => e.id == socket_uuid)[0].coordinates = new Coordinates(coords.latitude, coords.longitude)
+        io.in(socket_roomId).emit("updated_location", rooms[socket_roomId])
+        if(in_room != null){
+            rooms[in_room].users.filter((e) => e.id == socket_uuid)[0].coordinates = new Coordinates(coords.latitude, coords.longitude)
+            io.in(in_room).emit("updated_location", rooms[in_room])
+        }
     })
 
     // Socket
